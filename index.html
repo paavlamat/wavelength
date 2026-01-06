@@ -472,6 +472,7 @@
                 0 0 25px rgba(255, 255, 255, 0.4), 
                 inset 0 0 20px rgba(255, 255, 255, 0.25),
                 0 5px 15px rgba(0, 0, 0, 0.5);
+            overflow: hidden; /* NEW: Prevent shine animation from spilling out */
         }
         
         .target-zone.visible {
@@ -500,10 +501,11 @@
             bottom: 0;
             background: linear-gradient(90deg, 
                 transparent 0%, 
-                rgba(255, 255, 255, 0.25) 50%, 
+                rgba(255, 255, 255, 0.6) 50%, /* INCREASED OPACITY for better visibility */
                 transparent 100%);
             border-radius: 8px;
             animation: zoneShine 2s infinite linear;
+            will-change: transform;
         }
         
         .target-zone-label {
@@ -745,9 +747,28 @@
             }
         }
         
+        /* UPDATED: Smoother shine animation with easing at start/end */
         @keyframes zoneShine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% { 
+                transform: translateX(-100%);
+                opacity: 0; /* Start invisible */
+            }
+            10% { 
+                opacity: 1; /* Fade in quickly */
+            }
+            20% {
+                transform: translateX(-80%); /* Accelerate out */
+            }
+            80% {
+                transform: translateX(80%); /* Decelerate in */
+            }
+            90% { 
+                opacity: 1; /* Stay visible */
+            }
+            100% { 
+                transform: translateX(100%); 
+                opacity: 0; /* Fade out at end */
+            }
         }
         
         @keyframes slideGlow {
@@ -985,19 +1006,18 @@
             </div>
             
             <div class="status-message" id="statusMessage">
-                Player 1: Reveal the target and think of a clue that fits within the zone
+                Player 1 Reveal the target zone and think of a clue that fits within the zone
             </div>
         </div>
         
         <div class="instructions">
             <h3><i class="fas fa-gamepad"></i> How to Play</h3>
             <ol>
-                <li>The <span class="highlight">Clue Giver</span> reveals the target zone and thinks of a clue (like a game title) that fits within that range.</li>
-                <li>The Clue Giver hides the target, then the <span class="highlight">Guesser</span> moves the slider to where they think the target zone is.</li>
-                <li>If the guess is within the target zone, the <span class="highlight">Guesser gets 1 point</span>. Otherwise, the <span class="highlight">Clue Giver gets 1 point</span>.</li>
+                <li>The <span class="highlight">Clue Giver</span> reveals the target zone and thinks of a clue that fits within that range.</li>
+                <li>The <span class="highlight">Clue Giver</span> hides the target, then the <span class="highlight">Guesser</span> moves the slider to where they think the target zone is.</li>
+                <li>If the guess is within the target zone, the <span class="highlight">Guesser</span> gets 1 point. Otherwise, the <span class="highlight">Clue Giver</span> gets 1 point.</li>
                 <li>Players switch roles after each round. The first to 5 points wins!</li>
                 <li><span class="highlight">Click on player names to change them!</span></li>
-                <li><span class="highlight">Click color dots below names to choose different colors!</span></li>
                 <li><span class="highlight">Use +/- buttons to manually adjust scores if needed.</span></li>
                 <li><span class="highlight">Toggle sound effects with the speaker icon in the top right!</span></li>
             </ol>
@@ -1034,19 +1054,39 @@
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioContext;
         let soundEnabled = gameState.soundEnabled;
+        let audioContextInitialized = false;
         
         // Initialize audio context on user interaction
         function initAudio() {
-            if (!audioContext && soundEnabled) {
-                audioContext = new AudioContext();
+            if (!audioContextInitialized) {
+                audioContextInitialized = true;
+                if (!audioContext && soundEnabled) {
+                    audioContext = new AudioContext();
+                    // Resume audio context on first user interaction
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }
             }
         }
         
         // Play sound effects
         function playSound(type, value = null) {
-            if (!soundEnabled || !audioContext) return;
+            if (!soundEnabled) return;
+            
+            // Ensure audio context is initialized before playing sounds
+            if (!audioContextInitialized) {
+                initAudio();
+            }
+            
+            if (!audioContext) return;
             
             try {
+                // Resume audio context if it's suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 
@@ -1133,7 +1173,10 @@
             if (soundEnabled) {
                 soundToggle.classList.remove('muted');
                 icon.className = 'fas fa-volume-up';
-                initAudio();
+                // Initialize audio if it hasn't been initialized yet
+                if (!audioContextInitialized) {
+                    initAudio();
+                }
                 playSound('buttonClick');
             } else {
                 soundToggle.classList.add('muted');
@@ -1277,24 +1320,27 @@
             // Set up event listeners
             sliderEl.addEventListener('input', updateSlider);
             sliderEl.addEventListener('change', updateSlider);
-            sliderEl.addEventListener('mousedown', () => {
+            sliderEl.addEventListener('mousedown', handleSliderStart);
+            sliderEl.addEventListener('mouseup', handleSliderEnd);
+            sliderEl.addEventListener('touchstart', handleSliderStart);
+            sliderEl.addEventListener('touchend', handleSliderEnd);
+            
+            // Initialize audio on slider interaction (for first-time users)
+            function handleSliderStart() {
                 gameState.isDragging = true;
                 sliderIndicatorEl.classList.add('dragging');
+                
+                // Initialize audio on first slider interaction
+                if (!audioContextInitialized && soundEnabled) {
+                    initAudio();
+                }
                 playSound('buttonClick');
-            });
-            sliderEl.addEventListener('mouseup', () => {
+            }
+            
+            function handleSliderEnd() {
                 gameState.isDragging = false;
                 sliderIndicatorEl.classList.remove('dragging');
-            });
-            sliderEl.addEventListener('touchstart', () => {
-                gameState.isDragging = true;
-                sliderIndicatorEl.classList.add('dragging');
-                playSound('buttonClick');
-            });
-            sliderEl.addEventListener('touchend', () => {
-                gameState.isDragging = false;
-                sliderIndicatorEl.classList.remove('dragging');
-            });
+            }
             
             revealHideBtn.addEventListener('click', toggleTarget);
             submitGuessBtn.addEventListener('click', submitGuess);
@@ -1571,7 +1617,7 @@
                 targetZoneEl.classList.add('revealed');
                 
                 const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
-                statusMessageEl.textContent = `${clueGiver}: The target zone is revealed. Think of a clue (like a game title) that fits within this range!`;
+                statusMessageEl.textContent = `The target zone is revealed. ${clueGiver} hide the target zone again, then think of a clue that fits within this range!`;
             } else {
                 // Hide target
                 gameState.isTargetVisible = false;
@@ -1582,7 +1628,7 @@
                 
                 const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
                 const guesser = gameState.player1IsClueGiver ? gameState.player2 : gameState.player1;
-                statusMessageEl.textContent = `${guesser}: The target is hidden. ${clueGiver} has given a clue. Move the slider to where you think the target zone is!`;
+                statusMessageEl.textContent = `The target is hidden. ${clueGiver} gives a clue. ${guesser} move the slider to where you think the target zone is!`;
                 
                 // Enable submit button
                 submitGuessBtn.disabled = false;
@@ -1595,7 +1641,8 @@
         // Update status message
         function updateStatusMessage() {
             const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
-            statusMessageEl.textContent = `${clueGiver}: Reveal the target and think of a clue that fits within the zone`;
+            const guesser = gameState.player1IsClueGiver ? gameState.player2 : gameState.player1;
+            statusMessageEl.textContent = `${guesser} Needs to look away, then ${clueGiver} Reveals the target zone!`;
         }
         
         // Check win condition after manual score adjustment
@@ -1604,7 +1651,7 @@
                 const winner = gameState.player1Score >= 5 ? gameState.player1 : gameState.player2;
                 const winnerCard = gameState.player1Score >= 5 ? player1Card : player2Card;
                 
-                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉 Auto-resetting in 5 seconds...`;
+                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉`;
                 
                 // Play win sound
                 playSound('win');
@@ -1688,6 +1735,10 @@
             // Play slider sound with cooldown
             const now = Date.now();
             if (gameState.isDragging && now - gameState.lastSoundTime > gameState.soundCooldown) {
+                // Ensure audio context is initialized before playing slider sound
+                if (!audioContextInitialized && soundEnabled) {
+                    initAudio();
+                }
                 playSound('sliderMove', newValue);
                 gameState.lastSoundTime = now;
             }
@@ -1769,7 +1820,7 @@
                 const winner = gameState.player1Score >= 5 ? gameState.player1 : gameState.player2;
                 const winnerCard = gameState.player1Score >= 5 ? player1Card : player2Card;
                 
-                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉 Auto-resetting in 5 seconds...`;
+                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉`;
                 
                 // Play win sound
                 playSound('win');
@@ -1782,14 +1833,14 @@
                     resetGameScoresOnly();
                 }, 5000);
             } else {
-                // AUTO-CONTINUE: Switch roles and start new round after 1.5 seconds
+                // AUTO-CONTINUE: Switch roles and start new round after 3 seconds (UPDATED from 1.5 to 3)
                 gameState.roundTimer = setTimeout(() => {
                     // Switch roles for next round
                     switchRoles();
                     
                     // Start new round with new topic
                     startNewRound();
-                }, 1500);
+                }, 3000); // CHANGED: 1500 to 3000 (3 seconds)
             }
         }
         
