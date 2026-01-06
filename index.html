@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavelength Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0b0d0;
+            margin-bottom: 20px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .player-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .player-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .player-card.active {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-role {
+            font-size: 1.1rem;
+            color: #a5b1c2;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .player-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            color: white;
+        }
+        
+        .player-name:hover {
+            transform: scale(1.05);
+        }
+        
+        /* UPDATED: First two colors are SOLID, rest have gradients */
+        .player-name.color-1 {
+            background: #2a9d8f; /* Solid teal */
+        }
+        .player-name.color-2 {
+            background: #e76f51; /* Solid orange */
+        }
+        .player-name.color-3 {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        .player-name.color-4 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .player-name.color-5 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .player-name.color-6 {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .player-name.color-7 {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* UPDATED: Color options match player names */
+        .color-option.color-1 {
+            background: #2a9d8f;
+        }
+        .color-option.color-2 {
+            background: #e76f51;
+        }
+        .color-option.color-3 {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        .color-option.color-4 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .color-option.color-5 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .color-option.color-6 {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .color-option.color-7 {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+        }
+        
+        .score-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .score-control {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .score-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .score-control:active {
+            transform: scale(0.95);
+        }
+        
+        .player-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .game-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 35px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .spectrum-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .prompt-title {
+            font-size: 1.4rem;
+            color: #b0b0d0;
+            margin-bottom: 10px;
+        }
+        
+        .prompt {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ffd166;
+            margin: 15px 0 25px 0;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .prompt-ends {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .left-end {
+            text-align: left;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+        
+        .right-end {
+            text-align: right;
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        
+        .slider-section {
+            margin-top: 40px;
+        }
+        
+        .slider-wrapper {
+            position: relative;
+            margin: 40px 0 20px;
+            touch-action: pan-y;
+        }
+        
+        .slider-track {
+            width: 100%;
+            height: 25px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd166, #4ecdc4);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .slider-track-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255, 107, 107, 0.3), 
+                rgba(255, 209, 102, 0.3), 
+                rgba(78, 205, 196, 0.3));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 12px;
+        }
+        
+        .slider-input {
+            width: 100%;
+            height: 25px;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 10;
+            touch-action: pan-y;
+        }
+        
+        .slider-indicator {
+            position: absolute;
+            top: -20px;
+            width: 55px;
+            height: 55px;
+            background: white;
+            border-radius: 50%;
+            transform: translateX(-50%) scale(1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border: 4px solid #2c3e50;
+            transition: transform 0.1s ease, left 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        
+        .slider-indicator i {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            transition: transform 0.2s ease;
+        }
+        
+        .slider-indicator.dragging {
+            transform: translateX(-50%) scale(1.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.3);
+        }
+        
+        .slider-indicator.dragging i {
+            transform: rotate(15deg);
+        }
+        
+        /* FIXED: Ruler scale with PERFECT equal spacing for ALL numbers */
+        .ruler-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            position: relative;
+            width: 100%;
+            height: 50px; /* Increased height for ticks */
+        }
+        
+        .ruler-tick-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 0 0 auto;
+            width: 0; /* Zero width for flex spacing */
+            height: 100%;
+        }
+        
+        .ruler-tick {
+            width: 1px;
+            height: 12px; /* Increased height */
+            background: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            top: 0; /* Position at the very top */
+        }
+        
+        .ruler-number {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #b0b0d0;
+            text-align: center;
+            min-width: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            transform: translateX(-50%);
+            top: 18px; /* Position numbers lower, below the ticks */
+        }
+        
+        .ruler-major-tick {
+            height: 18px; /* Increased height for major ticks */
+            width: 2px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .ruler-major-tick + .ruler-number {
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        
+        /* Position numbers at exact positions */
+        .ruler-number[data-number="1"] {
+            left: 0%;
+        }
+        
+        .ruler-number[data-number="2"] {
+            left: 12.5%;
+        }
+        
+        .ruler-number[data-number="3"] {
+            left: 25%;
+        }
+        
+        .ruler-number[data-number="4"] {
+            left: 37.5%;
+        }
+        
+        .ruler-number[data-number="5"] {
+            left: 50%;
+        }
+        
+        .ruler-number[data-number="6"] {
+            left: 62.5%;
+        }
+        
+        .ruler-number[data-number="7"] {
+            left: 75%;
+        }
+        
+        .ruler-number[data-number="8"] {
+            left: 87.5%;
+        }
+        
+        .ruler-number[data-number="9"] {
+            left: 100%;
+        }
+        
+        /* UPDATED: Target Zone Design - MORE VISIBLE and standout */
+        .target-zone {
+            position: absolute;
+            top: -10px; /* Extends further above slider */
+            height: 45px; /* Extends further below slider */
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            display: none;
+            pointer-events: none;
+            z-index: 3;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 0 25px rgba(255, 255, 255, 0.4), 
+                inset 0 0 20px rgba(255, 255, 255, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .target-zone.visible {
+            display: block;
+            animation: zonePulse 1.5s infinite alternate;
+        }
+        
+        .target-zone.revealed {
+            border: 4px solid #fff;
+            background: linear-gradient(90deg, 
+                rgba(255, 107, 107, 0.4), 
+                rgba(255, 209, 102, 0.4), 
+                rgba(78, 205, 196, 0.4));
+            box-shadow: 
+                0 0 35px rgba(255, 255, 255, 0.5), 
+                inset 0 0 25px rgba(255, 255, 255, 0.3),
+                0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+        
+        .target-zone.visible::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.25) 50%, 
+                transparent 100%);
+            border-radius: 8px;
+            animation: zoneShine 2s infinite linear;
+        }
+        
+        .target-zone-label {
+            position: absolute;
+            top: -40px; /* Positioned higher */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .target-zone.visible .target-zone-label {
+            opacity: 1;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 40px;
+        }
+        
+        .button {
+            padding: 18px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        .button.primary {
+            background: linear-gradient(135deg, #2a9d8f, #264653);
+            color: white;
+        }
+        
+        .button.secondary {
+            background: linear-gradient(135deg, #e76f51, #f4a261);
+            color: white;
+        }
+        
+        .button.reveal {
+            background: linear-gradient(135deg, #ff6b6b, #ff9e6d);
+            color: white;
+        }
+        
+        .button.reset {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .button:disabled:hover {
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-message {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            line-height: 1.6;
+            color: #a5b1c2;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #f1c40f;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .name-edit-input {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            background: transparent;
+            border: 2px solid white;
+            border-radius: 15px;
+            color: white;
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .sound-toggle:hover {
+            background: rgba(0, 0, 0, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .sound-toggle.muted {
+            opacity: 0.7;
+            color: #ff6b6b;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        
+        @keyframes scorePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); color: #ffd166; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes confetti {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(1000px) rotate(360deg); opacity: 0; }
+        }
+        
+        @keyframes winnerGlow {
+            0% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(241, 196, 15, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); }
+        }
+        
+        @keyframes celebrate {
+            0% { transform: translateY(0) rotate(0); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(0) rotate(0); }
+            75% { transform: translateY(-10px) rotate(-5deg); }
+            100% { transform: translateY(0) rotate(0); }
+        }
+        
+        @keyframes zonePulse {
+            0% { 
+                box-shadow: 
+                    0 0 0 0 rgba(255, 255, 255, 0.5), 
+                    inset 0 0 20px rgba(255, 255, 255, 0.25),
+                    0 5px 15px rgba(0, 0, 0, 0.5);
+                border-color: rgba(255, 255, 255, 0.95);
+            }
+            100% { 
+                box-shadow: 
+                    0 0 0 15px rgba(255, 255, 255, 0), 
+                    inset 0 0 25px rgba(255, 255, 255, 0.35),
+                    0 8px 25px rgba(0, 0, 0, 0.6);
+                border-color: rgba(255, 255, 255, 1);
+            }
+        }
+        
+        @keyframes zoneShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes slideGlow {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        @keyframes indicatorBounce {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+        }
+        
+        .score-pop {
+            animation: scorePop 0.5s ease-out;
+        }
+        
+        .winner-glow {
+            animation: winnerGlow 1s infinite;
+        }
+        
+        .celebrate {
+            animation: celebrate 0.5s ease-out 3;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background: #f1c40f;
+            top: -20px;
+            z-index: 1000;
+            opacity: 0;
+        }
+        
+        .confetti:nth-child(5n) { background: #2ecc71; }
+        .confetti:nth-child(5n+1) { background: #e74c3c; }
+        .confetti:nth-child(5n+2) { background: #3498db; }
+        .confetti:nth-child(5n+3) { background: #9b59b6; }
+        .confetti:nth-child(5n+4) { background: #ff6b6b; }
+        
+        @media (max-width: 768px) {
+            .player-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .prompt {
+                font-size: 1.8rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .button {
+                padding: 15px 20px;
+            }
+            
+            .score-control {
+                width: 35px;
+                height: 35px;
+                font-size: 1.3rem;
+            }
+            
+            .player-score {
+                font-size: 2.2rem;
+            }
+            
+            .slider-indicator {
+                width: 45px;
+                height: 45px;
+                top: -15px;
+            }
+            
+            .ruler-number {
+                font-size: 0.85rem;
+            }
+            
+            .ruler-major-tick + .ruler-number {
+                font-size: 0.95rem;
+            }
+            
+            .target-zone-label {
+                font-size: 0.9rem;
+                padding: 4px 10px;
+                top: -35px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .prompt {
+                font-size: 1.6rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .slider-indicator {
+                width: 40px;
+                height: 40px;
+                top: -12px;
+            }
+            
+            .ruler-number {
+                font-size: 0.75rem;
+            }
+            
+            .ruler-major-tick + .ruler-number {
+                font-size: 0.85rem;
+            }
+            
+            .target-zone-label {
+                font-size: 0.8rem;
+                padding: 3px 8px;
+                top: -30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sound Toggle Button -->
+    <div class="sound-toggle" id="soundToggle">
+        <i class="fas fa-volume-up"></i>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-sliders-h"></i> WAVELENGTH</h1>
+            <p class="subtitle">Find the perfect clue between two extremes</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="player-section">
+                <!-- Player 1 (ALWAYS LEFT) - Starts with color-1 -->
+                <div class="player-card" id="player1Card">
+                    <div class="player-role" id="player1Role">Clue Giver</div>
+                    <div class="player-name color-1" id="player1Name" onclick="editPlayerName('player1Name')">Player 1</div>
+                    <div class="color-picker" id="player1ColorPicker">
+                        <!-- Player 1: EXACT SAME colors in EXACT SAME order as Player 2 -->
+                        <div class="color-option color-1 selected" onclick="changePlayerColor('player1', 'color-1')"></div>
+                        <div class="color-option color-2" onclick="changePlayerColor('player1', 'color-2')"></div>
+                        <div class="color-option color-3" onclick="changePlayerColor('player1', 'color-3')"></div>
+                        <div class="color-option color-4" onclick="changePlayerColor('player1', 'color-4')"></div>
+                        <div class="color-option color-5" onclick="changePlayerColor('player1', 'color-5')"></div>
+                        <div class="color-option color-6" onclick="changePlayerColor('player1', 'color-6')"></div>
+                        <div class="color-option color-7" onclick="changePlayerColor('player1', 'color-7')"></div>
+                    </div>
+                    <div class="score-container">
+                        <div class="score-control minus" onclick="adjustScore('player1', -1)">-</div>
+                        <div class="player-score" id="player1Score">0</div>
+                        <div class="score-control plus" onclick="adjustScore('player1', 1)">+</div>
+                    </div>
+                </div>
+                
+                <!-- Player 2 (ALWAYS RIGHT) - Starts with color-2 -->
+                <div class="player-card" id="player2Card">
+                    <div class="player-role" id="player2Role">Guesser</div>
+                    <div class="player-name color-2" id="player2Name" onclick="editPlayerName('player2Name')">Player 2</div>
+                    <div class="color-picker" id="player2ColorPicker">
+                        <!-- Player 2: EXACT SAME colors in EXACT SAME order as Player 1 -->
+                        <div class="color-option color-1" onclick="changePlayerColor('player2', 'color-1')"></div>
+                        <div class="color-option color-2 selected" onclick="changePlayerColor('player2', 'color-2')"></div>
+                        <div class="color-option color-3" onclick="changePlayerColor('player2', 'color-3')"></div>
+                        <div class="color-option color-4" onclick="changePlayerColor('player2', 'color-4')"></div>
+                        <div class="color-option color-5" onclick="changePlayerColor('player2', 'color-5')"></div>
+                        <div class="color-option color-6" onclick="changePlayerColor('player2', 'color-6')"></div>
+                        <div class="color-option color-7" onclick="changePlayerColor('player2', 'color-7')"></div>
+                    </div>
+                    <div class="score-container">
+                        <div class="score-control minus" onclick="adjustScore('player2', -1)">-</div>
+                        <div class="player-score" id="player2Score">0</div>
+                        <div class="score-control plus" onclick="adjustScore('player2', 1)">+</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="game-container">
+                <div class="spectrum-section">
+                    <div class="prompt-title">Current Spectrum</div>
+                    <div class="prompt" id="prompt">Worst Game ↔ Best Game</div>
+                    <div class="prompt-ends">
+                        <div class="left-end" id="leftEnd">Worst Game</div>
+                        <div class="right-end" id="rightEnd">Best Game</div>
+                    </div>
+                </div>
+                
+                <div class="slider-section">
+                    <div class="slider-wrapper">
+                        <div class="slider-track">
+                            <div class="slider-track-glow" id="sliderTrackGlow"></div>
+                        </div>
+                        <div class="target-zone" id="targetZone">
+                            <div class="target-zone-label">Target Zone</div>
+                        </div>
+                        <div class="slider-indicator pulse" id="sliderIndicator">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="slider-input" id="slider">
+                    </div>
+                    
+                    <!-- FIXED: Ruler Scale from 1 to 9 with PERFECT equal spacing for ALL numbers -->
+                    <div class="ruler-scale" id="rulerScale">
+                        <!-- Numbers 1-9 will be generated by JavaScript with exact positioning -->
+                    </div>
+                    
+                    <div class="controls">
+                        <!-- Single toggle button for reveal/hide -->
+                        <button class="button reveal" id="revealHideBtn">
+                            <i class="fas fa-eye"></i> Reveal Target
+                        </button>
+                        
+                        <button class="button primary" id="submitGuessBtn" disabled>
+                            <i class="fas fa-check-circle"></i> Submit Guess
+                        </button>
+                        
+                        <button class="button reset" id="resetBtn">
+                            <i class="fas fa-redo"></i> Reset Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-message" id="statusMessage">
+                Player 1: Reveal the target and think of a clue that fits within the zone
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-gamepad"></i> How to Play</h3>
+            <ol>
+                <li>The <span class="highlight">Clue Giver</span> reveals the target zone and thinks of a clue (like a game title) that fits within that range.</li>
+                <li>The Clue Giver hides the target, then the <span class="highlight">Guesser</span> moves the slider to where they think the target zone is.</li>
+                <li>If the guess is within the target zone, the <span class="highlight">Guesser gets 1 point</span>. Otherwise, the <span class="highlight">Clue Giver gets 1 point</span>.</li>
+                <li>Players switch roles after each round. The first to 5 points wins!</li>
+                <li><span class="highlight">Click on player names to change them!</span></li>
+                <li><span class="highlight">Click color dots below names to choose different colors!</span></li>
+                <li><span class="highlight">Use +/- buttons to manually adjust scores if needed.</span></li>
+                <li><span class="highlight">Toggle sound effects with the speaker icon in the top right!</span></li>
+            </ol>
+            <p>Tip: Give clues that are neither too obvious nor too vague!</p>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let gameState = {
+            player1: localStorage.getItem('player1Name') || "Player 1",
+            player2: localStorage.getItem('player2Name') || "Player 2",
+            player1Color: localStorage.getItem('player1Color') || 'color-1',  // Player 1 starts with color-1
+            player2Color: localStorage.getItem('player2Color') || 'color-2',  // Player 2 starts with color-2
+            player1Score: 0,
+            player2Score: 0,
+            player1IsClueGiver: true, // Start with Player 1 as clue giver
+            targetPosition: 50,
+            targetWidth: 20,
+            sliderValue: 50,
+            isTargetVisible: false,
+            roundActive: true,
+            gameActive: true,
+            clueGiven: false,
+            roundTimer: null,
+            editingName: null,
+            soundEnabled: localStorage.getItem('soundEnabled') !== 'false', // Default to true
+            isDragging: false,
+            lastSoundTime: 0,
+            soundCooldown: 100 // ms between slider sounds
+        };
+        
+        // Sound effect initialization
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioContext;
+        let soundEnabled = gameState.soundEnabled;
+        
+        // Initialize audio context on user interaction
+        function initAudio() {
+            if (!audioContext && soundEnabled) {
+                audioContext = new AudioContext();
+            }
+        }
+        
+        // Play sound effects
+        function playSound(type, value = null) {
+            if (!soundEnabled || !audioContext) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                let frequency, duration, volume;
+                
+                switch(type) {
+                    case 'sliderMove':
+                        // Pitch varies with slider position
+                        frequency = 200 + (value * 2);
+                        duration = 0.05;
+                        volume = 0.1;
+                        break;
+                    case 'buttonClick':
+                        frequency = 300;
+                        duration = 0.1;
+                        volume = 0.2;
+                        break;
+                    case 'scoreUp':
+                        frequency = 523.25; // C5
+                        duration = 0.3;
+                        volume = 0.3;
+                        break;
+                    case 'scoreDown':
+                        frequency = 392.00; // G4
+                        duration = 0.3;
+                        volume = 0.3;
+                        break;
+                    case 'success':
+                        frequency = 659.25; // E5
+                        duration = 0.5;
+                        volume = 0.25;
+                        break;
+                    case 'failure':
+                        frequency = 293.66; // D4
+                        duration = 0.4;
+                        volume = 0.3;
+                        break;
+                    case 'win':
+                        // Victory fanfare
+                        const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                        frequencies.forEach((freq, index) => {
+                            setTimeout(() => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                                osc.start();
+                                osc.stop(audioContext.currentTime + 0.3);
+                            }, index * 200);
+                        });
+                        return;
+                    default:
+                        return;
+                }
+                
+                if (type !== 'win') {
+                    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + duration);
+                }
+            } catch (e) {
+                console.log("Sound error:", e);
+            }
+        }
+        
+        // Toggle sound on/off
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            gameState.soundEnabled = soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            
+            const soundToggle = document.getElementById('soundToggle');
+            const icon = soundToggle.querySelector('i');
+            
+            if (soundEnabled) {
+                soundToggle.classList.remove('muted');
+                icon.className = 'fas fa-volume-up';
+                initAudio();
+                playSound('buttonClick');
+            } else {
+                soundToggle.classList.add('muted');
+                icon.className = 'fas fa-volume-mute';
+            }
+        }
+        
+        // Change player color
+        function changePlayerColor(player, colorClass) {
+            playSound('buttonClick');
+            
+            const playerName = document.getElementById(player + 'Name');
+            const colorPicker = document.getElementById(player + 'ColorPicker');
+            
+            // Remove all color classes and add the new one
+            playerName.className = 'player-name ' + colorClass;
+            
+            // Update selected state in color picker
+            const colorOptions = colorPicker.querySelectorAll('.color-option');
+            colorOptions.forEach(option => {
+                option.classList.remove('selected');
+                if (option.classList.contains(colorClass)) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Save to game state and localStorage
+            if (player === 'player1') {
+                gameState.player1Color = colorClass;
+                localStorage.setItem('player1Color', colorClass);
+            } else {
+                gameState.player2Color = colorClass;
+                localStorage.setItem('player2Color', colorClass);
+            }
+        }
+        
+        // Function to create ruler scale from 1 to 9 with perfect equal spacing
+        function createRulerScale() {
+            const rulerScale = document.getElementById('rulerScale');
+            rulerScale.innerHTML = ''; // Clear any existing content
+            
+            // Create 9 tick containers (1 through 9)
+            for (let i = 1; i <= 9; i++) {
+                const tickContainer = document.createElement('div');
+                tickContainer.className = 'ruler-tick-container';
+                
+                const tick = document.createElement('div');
+                const isMajorTick = i === 1 || i === 5 || i === 9; // Make 1, 5, and 9 major ticks
+                tick.className = isMajorTick ? 'ruler-tick ruler-major-tick' : 'ruler-tick';
+                
+                const number = document.createElement('div');
+                number.className = 'ruler-number';
+                number.textContent = i;
+                number.setAttribute('data-number', i);
+                
+                tickContainer.appendChild(tick);
+                tickContainer.appendChild(number);
+                rulerScale.appendChild(tickContainer);
+            }
+        }
+        
+        // Expanded game prompts database (50+ spectrums)
+        const prompts = [
+            { left: "Worst Game", right: "Best Game" },
+            { left: "Easy to Learn", right: "Hard to Learn" },
+            { left: "Common Experience", right: "Once in a Lifetime" },
+            { left: "Cheap Food", right: "Expensive Food" },
+            { left: "Common Pet", right: "Rare Pet" },
+            { left: "Quiet Activity", right: "Loud Activity" },
+            { left: "Cold Climate", right: "Hot Climate" },
+            { left: "Underrated", right: "Overrated" },
+            { left: "Basic Help", right: "Lifesaving Aid" },
+            { left: "Useless Invention", right: "Useful Invention" },
+            { left: "Weak Superpower", right: "Strong Superpower" },
+            { left: "Rarely Watched Sport", right: "Often Watched Sport" },
+            { left: "Bad Holiday Destination", right: "Good Holiday Destination" },
+            { left: "Unhealthy Food", right: "Healthy Food" },
+            { left: "Predictable", right: "Surprising" },
+            { left: "Basic Item", right: "Luxury Item" },
+            { left: "Common Name", right: "Unique Name" },
+            { left: "Common Problem", right: "Rare Problem" },
+            { left: "Calm Activity", right: "Energized Activity" },
+            { left: "Cringe", right: "Cool" },
+            { left: "Simple Game", right: "Complex Game" },
+            { left: "Cheap Material", right: "Expensive Material" },
+            { left: "Ugly Color", right: "Beautiful Color" },
+            { left: "Weak Animal", right: "Strong Animal" },
+            { left: "Bad Investment", right: "Good Investment" },
+            { left: "Kid Stuff", right: "Adult Stuff" },
+            { left: "Common Superpower", right: "Rare Superpower" },
+            { left: "Old Technology", right: "New Technology" },
+            { left: "Overhyped", right: "Deservedly Popular" },
+            { left: "Bad Habit", right: "Good Habit" },
+            { left: "Risky Activity", right: "Safe Activity" },
+            { left: "Traditional", right: "Modern" },
+            { left: "Scary", right: "Calming" },
+            { left: "Waste of Time", right: "Worth the Time" },
+            { left: "Indoor Activity", right: "Outdoor Activity" },
+            { left: "Common Hobby", right: "Rare Hobby" },
+            { left: "Easy to Learn", right: "Hard to Learn" },
+            { left: "Easy Job", right: "Hard Job" },
+            { left: "Bad Design", right: "Good Design" },
+            { left: "Common Car", right: "Luxury Car" },
+            { left: "Bad Gift", right: "Good Gift" },
+            { left: "Basic Knowledge", right: "Expert Knowledge" },
+            { left: "Bad Vacation", right: "Good Vacation" },
+            { left: "Water", right: "Alcoholic Drink" },
+            { left: "Bad Weather", right: "Good Weather" },
+            { left: "Easy Decision", right: "Hard Decision" },
+            { left: "Bad Idea", right: "Brilliant Idea" },
+            { left: "Weak Password", right: "Strong Password" },
+        ];
+        
+        // DOM elements
+        const player1NameEl = document.getElementById('player1Name');
+        const player2NameEl = document.getElementById('player2Name');
+        const player1RoleEl = document.getElementById('player1Role');
+        const player2RoleEl = document.getElementById('player2Role');
+        const player1ScoreEl = document.getElementById('player1Score');
+        const player2ScoreEl = document.getElementById('player2Score');
+        const player1Card = document.getElementById('player1Card');
+        const player2Card = document.getElementById('player2Card');
+        const promptEl = document.getElementById('prompt');
+        const leftEndEl = document.getElementById('leftEnd');
+        const rightEndEl = document.getElementById('rightEnd');
+        const sliderEl = document.getElementById('slider');
+        const sliderIndicatorEl = document.getElementById('sliderIndicator');
+        const targetZoneEl = document.getElementById('targetZone');
+        const revealHideBtn = document.getElementById('revealHideBtn');
+        const submitGuessBtn = document.getElementById('submitGuessBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessageEl = document.getElementById('statusMessage');
+        const soundToggle = document.getElementById('soundToggle');
+        const sliderTrackGlow = document.getElementById('sliderTrackGlow');
+        
+        // Initialize the game
+        function initGame() {
+            // Create the ruler scale
+            createRulerScale();
+            
+            // Set up event listeners
+            sliderEl.addEventListener('input', updateSlider);
+            sliderEl.addEventListener('change', updateSlider);
+            sliderEl.addEventListener('mousedown', () => {
+                gameState.isDragging = true;
+                sliderIndicatorEl.classList.add('dragging');
+                playSound('buttonClick');
+            });
+            sliderEl.addEventListener('mouseup', () => {
+                gameState.isDragging = false;
+                sliderIndicatorEl.classList.remove('dragging');
+            });
+            sliderEl.addEventListener('touchstart', () => {
+                gameState.isDragging = true;
+                sliderIndicatorEl.classList.add('dragging');
+                playSound('buttonClick');
+            });
+            sliderEl.addEventListener('touchend', () => {
+                gameState.isDragging = false;
+                sliderIndicatorEl.classList.remove('dragging');
+            });
+            
+            revealHideBtn.addEventListener('click', toggleTarget);
+            submitGuessBtn.addEventListener('click', submitGuess);
+            resetBtn.addEventListener('click', resetGame);
+            soundToggle.addEventListener('click', toggleSound);
+            
+            // Initialize audio context on first user interaction
+            document.addEventListener('click', initAudio, { once: true });
+            document.addEventListener('touchstart', initAudio, { once: true });
+            
+            // Set initial sound toggle state
+            const soundIcon = soundToggle.querySelector('i');
+            if (!soundEnabled) {
+                soundToggle.classList.add('muted');
+                soundIcon.className = 'fas fa-volume-mute';
+            }
+            
+            // Update player names, colors and roles
+            updatePlayerNames();
+            updatePlayerColors();
+            updateRoles();
+            
+            // Start the first round
+            startNewRound();
+        }
+        
+        // Update player colors
+        function updatePlayerColors() {
+            // Set player 1 color
+            player1NameEl.className = 'player-name ' + gameState.player1Color;
+            const player1ColorPicker = document.getElementById('player1ColorPicker');
+            const player1Options = player1ColorPicker.querySelectorAll('.color-option');
+            player1Options.forEach(option => {
+                option.classList.remove('selected');
+                if (option.classList.contains(gameState.player1Color)) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Set player 2 color
+            player2NameEl.className = 'player-name ' + gameState.player2Color;
+            const player2ColorPicker = document.getElementById('player2ColorPicker');
+            const player2Options = player2ColorPicker.querySelectorAll('.color-option');
+            player2Options.forEach(option => {
+                option.classList.remove('selected');
+                if (option.classList.contains(gameState.player2Color)) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        // Function to edit player names
+        function editPlayerName(playerType) {
+            if (gameState.editingName) return; // Already editing
+            
+            playSound('buttonClick');
+            
+            const nameElement = document.getElementById(playerType);
+            const currentName = nameElement.textContent;
+            const currentColor = nameElement.className.replace('player-name ', '');
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'name-edit-input';
+            input.value = currentName;
+            input.maxLength = 15;
+            
+            // Replace name with input
+            nameElement.parentNode.replaceChild(input, nameElement);
+            gameState.editingName = { element: nameElement, playerType: playerType, input: input, color: currentColor };
+            
+            // Focus and select text
+            input.focus();
+            input.select();
+            
+            // Handle input events
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    savePlayerName();
+                }
+            });
+            
+            input.addEventListener('blur', savePlayerName);
+        }
+        
+        // Save the edited player name
+        function savePlayerName() {
+            if (!gameState.editingName) return;
+            
+            playSound('buttonClick');
+            
+            const { element, playerType, input, color } = gameState.editingName;
+            const newName = input.value.trim() || element.textContent;
+            
+            // Update game state based on which player was edited
+            if (playerType === 'player1Name') {
+                gameState.player1 = newName;
+                localStorage.setItem('player1Name', newName);
+            } else if (playerType === 'player2Name') {
+                gameState.player2 = newName;
+                localStorage.setItem('player2Name', newName);
+            }
+            
+            // Restore the name element with color
+            element.textContent = newName;
+            element.className = 'player-name ' + color;
+            input.parentNode.replaceChild(element, input);
+            
+            // Clear editing state
+            gameState.editingName = null;
+            
+            // Update status message with new name
+            updateStatusMessage();
+        }
+        
+        // Update player names
+        function updatePlayerNames() {
+            player1NameEl.textContent = gameState.player1;
+            player2NameEl.textContent = gameState.player2;
+        }
+        
+        // Update roles display
+        function updateRoles() {
+            if (gameState.player1IsClueGiver) {
+                player1RoleEl.textContent = "Clue Giver";
+                player2RoleEl.textContent = "Guesser";
+                player1Card.classList.add('active');
+                player2Card.classList.remove('active');
+            } else {
+                player1RoleEl.textContent = "Guesser";
+                player2RoleEl.textContent = "Clue Giver";
+                player1Card.classList.remove('active');
+                player2Card.classList.add('active');
+            }
+        }
+        
+        // Switch roles between players
+        function switchRoles() {
+            // Toggle clue giver status
+            gameState.player1IsClueGiver = !gameState.player1IsClueGiver;
+            updateRoles();
+            playSound('buttonClick');
+        }
+        
+        // Manually adjust score with +/- buttons
+        function adjustScore(player, amount) {
+            playSound(amount > 0 ? 'scoreUp' : 'scoreDown');
+            
+            if (player === 'player1') {
+                gameState.player1Score = Math.max(0, gameState.player1Score + amount);
+                player1ScoreEl.textContent = gameState.player1Score;
+                animateScore(player1ScoreEl);
+            } else {
+                gameState.player2Score = Math.max(0, gameState.player2Score + amount);
+                player2ScoreEl.textContent = gameState.player2Score;
+                animateScore(player2ScoreEl);
+            }
+            
+            // Check if win condition is met after manual adjustment
+            checkWinCondition();
+        }
+        
+        // Generate target zone with edge extension
+        function generateTargetZone() {
+            // Generate random target width
+            gameState.targetWidth = Math.floor(Math.random() * 16) + 15; // 15-30%
+            
+            // Generate a completely random position from 0 to 100
+            // This gives equal chance for ANY position
+            let randomPosition = Math.random() * 100;
+            
+            // Check if this random position would put the target zone near an edge
+            const edgeThreshold = 5; // 5% from edge threshold
+            
+            // Calculate where the edges of the target zone would be
+            const leftEdge = randomPosition - gameState.targetWidth / 2;
+            const rightEdge = randomPosition + gameState.targetWidth / 2;
+            
+            // If target zone is close to left edge, extend it to left edge
+            if (leftEdge < edgeThreshold) {
+                // Extend to left edge
+                gameState.targetPosition = gameState.targetWidth / 2;
+            }
+            // If target zone is close to right edge, extend it to right edge
+            else if (rightEdge > 100 - edgeThreshold) {
+                // Extend to right edge
+                gameState.targetPosition = 100 - gameState.targetWidth / 2;
+            }
+            // Otherwise, keep the random position
+            else {
+                gameState.targetPosition = randomPosition;
+            }
+            
+            // Final boundary check to ensure the target zone is within 0-100
+            const finalLeftEdge = gameState.targetPosition - gameState.targetWidth / 2;
+            const finalRightEdge = gameState.targetPosition + gameState.targetWidth / 2;
+            
+            if (finalLeftEdge < 0) {
+                gameState.targetPosition = gameState.targetWidth / 2;
+            } else if (finalRightEdge > 100) {
+                gameState.targetPosition = 100 - gameState.targetWidth / 2;
+            }
+        }
+        
+        // Start a completely new round with new topic and target
+        function startNewRound() {
+            // Clear any existing timer
+            if (gameState.roundTimer) {
+                clearTimeout(gameState.roundTimer);
+                gameState.roundTimer = null;
+            }
+            
+            // Reset round state
+            gameState.roundActive = true;
+            gameState.isTargetVisible = false;
+            gameState.sliderValue = 50;
+            gameState.clueGiven = false;
+            gameState.isDragging = false;
+            
+            // Pick a RANDOM NEW prompt from expanded list
+            const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+            
+            // Update prompt display with NEW topic
+            promptEl.textContent = `${randomPrompt.left} ↔ ${randomPrompt.right}`;
+            leftEndEl.textContent = randomPrompt.left;
+            rightEndEl.textContent = randomPrompt.right;
+            
+            // Generate target zone with equal probability anywhere
+            generateTargetZone();
+            
+            // Reset UI
+            sliderEl.value = 50;
+            sliderIndicatorEl.style.left = '50%';
+            sliderIndicatorEl.classList.remove('dragging');
+            targetZoneEl.classList.remove('visible');
+            targetZoneEl.classList.remove('pulse');
+            targetZoneEl.classList.remove('revealed');
+            sliderTrackGlow.style.opacity = '0';
+            
+            // Update target zone display with NEW position
+            updateTargetZone();
+            
+            // Reset reveal/hide button to "Reveal" state
+            updateRevealHideButton();
+            revealHideBtn.disabled = false;
+            submitGuessBtn.disabled = true;
+            
+            // Update status message
+            updateStatusMessage();
+        }
+        
+        // Update the reveal/hide button state
+        function updateRevealHideButton() {
+            const icon = revealHideBtn.querySelector('i');
+            if (gameState.isTargetVisible) {
+                revealHideBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Target';
+            } else {
+                revealHideBtn.innerHTML = '<i class="fas fa-eye"></i> Reveal Target';
+            }
+        }
+        
+        // Toggle target visibility
+        function toggleTarget() {
+            if (!gameState.roundActive) return;
+            
+            playSound('buttonClick');
+            
+            if (!gameState.isTargetVisible) {
+                // Reveal target
+                gameState.isTargetVisible = true;
+                targetZoneEl.classList.add('visible');
+                targetZoneEl.classList.add('pulse');
+                targetZoneEl.classList.add('revealed');
+                
+                const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
+                statusMessageEl.textContent = `${clueGiver}: The target zone is revealed. Think of a clue (like a game title) that fits within this range!`;
+            } else {
+                // Hide target
+                gameState.isTargetVisible = false;
+                gameState.clueGiven = true;
+                targetZoneEl.classList.remove('visible');
+                targetZoneEl.classList.remove('pulse');
+                targetZoneEl.classList.remove('revealed');
+                
+                const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
+                const guesser = gameState.player1IsClueGiver ? gameState.player2 : gameState.player1;
+                statusMessageEl.textContent = `${guesser}: The target is hidden. ${clueGiver} has given a clue. Move the slider to where you think the target zone is!`;
+                
+                // Enable submit button
+                submitGuessBtn.disabled = false;
+            }
+            
+            // Update button appearance
+            updateRevealHideButton();
+        }
+        
+        // Update status message
+        function updateStatusMessage() {
+            const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
+            statusMessageEl.textContent = `${clueGiver}: Reveal the target and think of a clue that fits within the zone`;
+        }
+        
+        // Check win condition after manual score adjustment
+        function checkWinCondition() {
+            if (gameState.player1Score >= 5 || gameState.player2Score >= 5) {
+                const winner = gameState.player1Score >= 5 ? gameState.player1 : gameState.player2;
+                const winnerCard = gameState.player1Score >= 5 ? player1Card : player2Card;
+                
+                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉 Auto-resetting in 5 seconds...`;
+                
+                // Play win sound
+                playSound('win');
+                
+                // Celebrate winner with animations
+                celebrateWinner(winnerCard);
+                
+                // Auto-reset after 5 seconds
+                gameState.roundTimer = setTimeout(() => {
+                    resetGameScoresOnly();
+                }, 5000);
+            }
+        }
+        
+        // Create confetti animation
+        function createConfetti() {
+            const confettiCount = 100;
+            const container = document.body;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Animate score increase
+        function animateScore(element) {
+            element.classList.add('score-pop');
+            setTimeout(() => {
+                element.classList.remove('score-pop');
+            }, 500);
+        }
+        
+        // Animate winner celebration
+        function celebrateWinner(winnerCard) {
+            // Add glow effect
+            winnerCard.classList.add('winner-glow');
+            
+            // Add bounce animation to score
+            const scoreElement = winnerCard.querySelector('.player-score');
+            scoreElement.classList.add('celebrate');
+            
+            // Create confetti
+            createConfetti();
+            
+            // Remove animations after celebration
+            setTimeout(() => {
+                winnerCard.classList.remove('winner-glow');
+                scoreElement.classList.remove('celebrate');
+            }, 7000);
+        }
+        
+        // Optimized slider update function with sound
+        function updateSlider() {
+            const newValue = parseInt(sliderEl.value);
+            const oldValue = gameState.sliderValue;
+            gameState.sliderValue = newValue;
+            
+            // Use requestAnimationFrame for smooth animation
+            requestAnimationFrame(() => {
+                sliderIndicatorEl.style.left = `${gameState.sliderValue}%`;
+                
+                // Add glow effect when moving
+                if (gameState.isDragging) {
+                    sliderTrackGlow.style.opacity = '1';
+                }
+            });
+            
+            // Play slider sound with cooldown
+            const now = Date.now();
+            if (gameState.isDragging && now - gameState.lastSoundTime > gameState.soundCooldown) {
+                playSound('sliderMove', newValue);
+                gameState.lastSoundTime = now;
+            }
+            
+            // Animate indicator bounce when value changes significantly
+            if (Math.abs(newValue - oldValue) > 2) {
+                sliderIndicatorEl.style.animation = 'indicatorBounce 0.2s ease';
+                setTimeout(() => {
+                    sliderIndicatorEl.style.animation = '';
+                }, 200);
+            }
+            
+            // If target is hidden and clue has been given, enable submit button
+            if (!gameState.isTargetVisible && gameState.clueGiven) {
+                submitGuessBtn.disabled = false;
+            }
+        }
+        
+        // Update the target zone display
+        function updateTargetZone() {
+            const leftPosition = gameState.targetPosition - gameState.targetWidth / 2;
+            targetZoneEl.style.left = `${leftPosition}%`;
+            targetZoneEl.style.width = `${gameState.targetWidth}%`;
+        }
+        
+        // Submit the guess and calculate score
+        function submitGuess() {
+            if (!gameState.roundActive) return;
+            
+            gameState.roundActive = false;
+            submitGuessBtn.disabled = true;
+            revealHideBtn.disabled = true;
+            sliderTrackGlow.style.opacity = '0';
+            
+            // Show target zone
+            targetZoneEl.classList.add('visible');
+            targetZoneEl.classList.add('revealed');
+            
+            // Calculate distance from target center
+            const distance = Math.abs(gameState.sliderValue - gameState.targetPosition);
+            const targetRadius = gameState.targetWidth / 2;
+            const guessInTargetZone = distance <= targetRadius;
+            
+            // Get current clue giver and guesser
+            const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
+            const guesser = gameState.player1IsClueGiver ? gameState.player2 : gameState.player1;
+            
+            // Award points
+            if (guessInTargetZone) {
+                playSound('success');
+                // Guesser gets 1 point
+                if (gameState.player1IsClueGiver) {
+                    gameState.player2Score++;
+                    player2ScoreEl.textContent = gameState.player2Score;
+                    animateScore(player2ScoreEl);
+                } else {
+                    gameState.player1Score++;
+                    player1ScoreEl.textContent = gameState.player1Score;
+                    animateScore(player1ScoreEl);
+                }
+                statusMessageEl.textContent = `Perfect! ${guesser} guessed within the target zone and earns 1 point!`;
+            } else {
+                playSound('failure');
+                // Clue giver gets 1 point
+                if (gameState.player1IsClueGiver) {
+                    gameState.player1Score++;
+                    player1ScoreEl.textContent = gameState.player1Score;
+                    animateScore(player1ScoreEl);
+                } else {
+                    gameState.player2Score++;
+                    player2ScoreEl.textContent = gameState.player2Score;
+                    animateScore(player2ScoreEl);
+                }
+                statusMessageEl.textContent = `Missed! ${guesser} was ${distance.toFixed(1)}% away from the target. ${clueGiver} earns 1 point!`;
+            }
+            
+            // Check for win condition
+            if (gameState.player1Score >= 5 || gameState.player2Score >= 5) {
+                const winner = gameState.player1Score >= 5 ? gameState.player1 : gameState.player2;
+                const winnerCard = gameState.player1Score >= 5 ? player1Card : player2Card;
+                
+                statusMessageEl.textContent = `🎉 ${winner} wins the game! 🎉 Auto-resetting in 5 seconds...`;
+                
+                // Play win sound
+                playSound('win');
+                
+                // Celebrate winner with animations
+                celebrateWinner(winnerCard);
+                
+                // Auto-reset after 5 seconds
+                gameState.roundTimer = setTimeout(() => {
+                    resetGameScoresOnly();
+                }, 5000);
+            } else {
+                // AUTO-CONTINUE: Switch roles and start new round after 1.5 seconds
+                gameState.roundTimer = setTimeout(() => {
+                    // Switch roles for next round
+                    switchRoles();
+                    
+                    // Start new round with new topic
+                    startNewRound();
+                }, 1500);
+            }
+        }
+        
+        // Reset only scores (keep player names and colors)
+        function resetGameScoresOnly() {
+            // Clear any existing timer
+            if (gameState.roundTimer) {
+                clearTimeout(gameState.roundTimer);
+                gameState.roundTimer = null;
+            }
+            
+            // Reset scores only
+            gameState.player1Score = 0;
+            gameState.player2Score = 0;
+            gameState.player1IsClueGiver = true;
+            gameState.targetPosition = 50;
+            gameState.targetWidth = 20;
+            gameState.sliderValue = 50;
+            gameState.isTargetVisible = false;
+            gameState.roundActive = true;
+            gameState.gameActive = true;
+            gameState.clueGiven = false;
+            gameState.isDragging = false;
+            
+            // Update UI
+            player1ScoreEl.textContent = "0";
+            player2ScoreEl.textContent = "0";
+            
+            // Update roles
+            updateRoles();
+            
+            // Reset buttons
+            revealHideBtn.disabled = false;
+            submitGuessBtn.disabled = true;
+            updateRevealHideButton();
+            
+            // Reset slider
+            sliderEl.value = 50;
+            sliderIndicatorEl.style.left = '50%';
+            sliderIndicatorEl.classList.remove('dragging');
+            targetZoneEl.classList.remove('visible');
+            targetZoneEl.classList.remove('pulse');
+            targetZoneEl.classList.remove('revealed');
+            sliderTrackGlow.style.opacity = '0';
+            
+            // Start a completely new round
+            startNewRound();
+        }
+        
+        // Reset the entire game (including names and colors - for reset button)
+        function resetGame() {
+            playSound('buttonClick');
+            
+            // Clear any existing timer
+            if (gameState.roundTimer) {
+                clearTimeout(gameState.roundTimer);
+                gameState.roundTimer = null;
+            }
+            
+            // Reset game state (including names and colors)
+            gameState.player1 = "Player 1";
+            gameState.player2 = "Player 2";
+            gameState.player1Color = "color-1";  // Player 1 resets to color-1
+            gameState.player2Color = "color-2";  // Player 2 resets to color-2
+            gameState.player1Score = 0;
+            gameState.player2Score = 0;
+            gameState.player1IsClueGiver = true;
+            gameState.targetPosition = 50;
+            gameState.targetWidth = 20;
+            gameState.sliderValue = 50;
+            gameState.isTargetVisible = false;
+            gameState.roundActive = true;
+            gameState.gameActive = true;
+            gameState.clueGiven = false;
+            gameState.isDragging = false;
+            
+            // Clear localStorage
+            localStorage.removeItem('player1Name');
+            localStorage.removeItem('player2Name');
+            localStorage.removeItem('player1Color');
+            localStorage.removeItem('player2Color');
+            
+            // Update UI
+            updatePlayerNames();
+            updatePlayerColors();
+            player1ScoreEl.textContent = "0";
+            player2ScoreEl.textContent = "0";
+            
+            // Update roles
+            updateRoles();
+            
+            // Reset buttons
+            revealHideBtn.disabled = false;
+            submitGuessBtn.disabled = true;
+            updateRevealHideButton();
+            
+            // Reset slider
+            sliderEl.value = 50;
+            sliderIndicatorEl.style.left = '50%';
+            sliderIndicatorEl.classList.remove('dragging');
+            targetZoneEl.classList.remove('visible');
+            targetZoneEl.classList.remove('pulse');
+            targetZoneEl.classList.remove('revealed');
+            sliderTrackGlow.style.opacity = '0';
+            
+            // Start a completely new round
+            startNewRound();
+        }
+        
+        // Initialize the game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
