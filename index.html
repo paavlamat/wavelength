@@ -1642,7 +1642,7 @@
         function updateStatusMessage() {
             const clueGiver = gameState.player1IsClueGiver ? gameState.player1 : gameState.player2;
             const guesser = gameState.player1IsClueGiver ? gameState.player2 : gameState.player1;
-            statusMessageEl.textContent = `${guesser} needs to look away, then ${clueGiver} reveals the target zone!`;
+            statusMessageEl.textContent = `${guesser} Needs to look away, then ${clueGiver} Reveals the target zone!`;
         }
         
         // Check win condition after manual score adjustment
@@ -1855,7 +1855,11 @@
             // Reset scores only
             gameState.player1Score = 0;
             gameState.player2Score = 0;
-            gameState.player1IsClueGiver = true;
+            
+            // IMPORTANT CHANGE: Switch who starts as clue giver after a win
+            // This ensures the same person isn't clue giver twice in a row
+            gameState.player1IsClueGiver = !gameState.player1IsClueGiver;
+            
             gameState.targetPosition = 50;
             gameState.targetWidth = 20;
             gameState.sliderValue = 50;
